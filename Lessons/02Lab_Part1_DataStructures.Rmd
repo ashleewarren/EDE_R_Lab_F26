@@ -40,9 +40,11 @@ class(vector1)
 
 vector2 <- c("one","two","three") # Vector type: 
 vector2
+class(vector2)
 
 vector3 <- c(TRUE,TRUE,TRUE,FALSE,TRUE,FALSE) # Vector type:
 vector3
+class(vector3)
 ```
 
 ### Vector Operations
@@ -52,25 +54,26 @@ Add comments below to indicate what each operation does.(First answer is provide
 # Returns the 3rd item in the vector
 vector1[3]
 
-#
+#Returns maximum value of vector1
 max(vector1)
 
 #Create another vector of the values 10 thru 15
 vector4 <- c(10:15)
+vector4
 
-#
+#Bind vector1 and vector4
 c(vector1, vector4)
 
-#
+#Multiply vector1 by vector4
 vector1 * vector4
 
-#
+#Multiply vector1 by 10
 vector1 * 10
 
-#
+#Convert all characters in vector2 to uppercase
 toupper(vector2) 
 
-#
+#Reverse vector3
 !vector3
 
 ```
@@ -82,16 +85,16 @@ Find a 5-day forecast of temperatures (Fahrenheit) for Durham, North Carolina. C
 ```{r Vector Exercise}
 
 #Assign to the variable 'temps_F' a vector of high temperatures in F
-
+temps_F <- c(98, 94, 83, 83, 86)
 
 #What is the average of these temperatures 
-
+mean(temps_F)
 
 #Compute the difference between each temperature and the average calculated above
-
+temps_F - mean(temps_F)
 
 #Subtract 32 and multiply by 5/9ths to create a vector in Celsius
-
+temps_C <- (temps_F - 32)*5/9
 
 ```
 
@@ -118,7 +121,6 @@ matrix3 <- matrix(
     c("un", "deux", "trois", "quatre")
     )
   ) 
-
 ```
 
 ### Matrix Operations
@@ -162,7 +164,7 @@ matrix4['R2','C1']
 ### Exercise 1b: Matrices
 Compute the mean of column "C2" in matrix4. (Should be 14.5)
 ```{r Matrix Exercise}
-
+mean(matrix4 C2)
 ```
 
 
@@ -194,13 +196,13 @@ list1$age
 #
 names(list1)
 
-#
+#First two objects in list
 list1[1:2]
 
-#
+#Change Name to Janelle
 list1$name = "Janelle"
 
-#
+#Change Fourth Object Age to 44
 list1[[4]] = 44
 ```
 
