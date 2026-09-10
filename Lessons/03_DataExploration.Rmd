@@ -130,7 +130,7 @@ Commons functions to import datasets and store as data frames are *read.table()*
 # site_no looks numeric but is really an ID with a leading zero, so we keep it
 # as character to protect that zero.
 USGS.flow.data <- read.csv(
-  file = here("Data/Raw/USGS_Site02085000_Flow_Raw.csv"),
+  file = here("Data/Raw/USGS_Site02085000_Flow_raw.csv"),
   colClasses = c("site_no" = "character")
 )
 
