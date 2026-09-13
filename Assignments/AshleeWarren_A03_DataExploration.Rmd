@@ -40,6 +40,8 @@ library(here)
 #Checking my current working directory
 here()
 
+cat("\\newpage")
+
 #Importing my datasets
 Neonics <- read.csv(
   file = here("Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.txt"),
@@ -74,18 +76,18 @@ file = here("Data/Raw/NEON_NIWO_Litter_massdata_2016-26_raw.csv")
 
 5.  What are the dimensions of the dataset?
 
-```{r Q5}
-#Finding the dimensions of the Neonics dataset
+```{r Dimensions of Neonics Dataset}
+#Finding the dimensions of the Neonics dataset with the dim function
 dim(Neonics)
 ```
 
 6.  Using the `summary` function on the "Effect" column, determine the most common effects that are studied. Why might these effects specifically be of interest? [Tip: The `sort()` command is useful for listing the values in order of magnitude...]
 
-```{r Q6}
+```{r Most Common Effects}
 #Using the summary function on the Effect column to determine the most common effects
-Summary(Neonics$Effect)
+summary(Neonics$Effect)
 
-#This only told me the length, class, and mode information rather than the actual effects. I'm converting the Effect column data to a factor and then using the summary function.
+#Summary function only told me the length, class, and mode information rather than the actual effects. I'm converting the Effect column data into groups using the factor function and then using the summary function.
 Neonics$Effect <- factor(Neonics$Effect)
 summary(Neonics$Effect)
 
@@ -95,24 +97,25 @@ summary(Neonics$Effect)
 
 7.  Using the `summary` function, determine the six most commonly studied species in the dataset (common name). What do these species have in common, and why might they be of interest over other insects? Feel free to do a brief internet search for more information if needed.[TIP: Explore the help on the `summary()` function, in particular the `maxsum` argument...]
 
-```{r Q7}
+```{r Six Most Commonly Studied Species}
 #Using the factor function first to convert the text into data that is sortable and then using the summary function to determine the six mostly commonly studied species
 Neonics$X.Species.Common.Name <-factor(Neonics$X.Species.Common.Name)
 summary(Neonics$X.Species.Common.Name)
 summary(Neonics$X.Species.Common.Name, maxsum = 6)
 summary(Neonics$X.Species.Common.Name, maxsum = 7)
 
-#After using the summary feature initially, I tried out the maxsum addition. When I selected 6, it grouped all of the other species as the sixth item on the list. I then ran it for seven, and it gave me the six most studied species with the seventh listing as all others.
+#After using the summary feature initially, I tried out maxsum. When I selected 6, it grouped all of the other species as the sixth item on the list. I then ran it for seven, and it gave me the six most studied species with the seventh listing as all others.
 ```
 
 > Answer: The six most commonly studied species are honey bee, Carniolan honey bee, parasitic wasp, bumble bee, Italian honeybee, and Asiatic honey bee. All of these species are pollinators, which would make them of great interest to study.
 
 8.  Concentrations are always a numeric value. What is the class of `Conc.1.Mean..Author..` column in the dataset, and why is it not numeric? [Tip: Viewing the dataframe may be helpful...]
 
-```{r Q8}
-#Viewing the dataframe to better understand the data in Conc.1.Mean..Author.. and then checking the class
-view(Neonics)
+```{r Conc.1.Mean..Author.. Class}
+#Viewing the dataframe to better understand the data in Conc.1.Mean..Author.. and then checking the class.
+#view(Neonics)
 class(Neonics$X.Conc.1.Mean..Author..)
+#commenting out view to avoid knitting issues
 ```
 
 > Answer: The class of Conc.1.Mean..Author.. is character. I believe this may be the case because some of the numbers have a / following the number.
@@ -123,53 +126,73 @@ class(Neonics$X.Conc.1.Mean..Author..)
 
 [**TIP**: Add `theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))` to the end of your plot command to rotate and align the X-axis labels...]
 
-```{r Q11}
-
-
+```{r Bar Grap of Endpoint Counts}
+ggplot(Neonics, aes(x = Endpoint.), theme(axis.tent.x = element_text(angle = 90, vjust = 0.5, hjust = 1))) +
+  geom_bar()
+#I created a bar graph using the endpoint column data, including axis labels.
 ```
 
-> Answer:
+> Answer: The two most common endpoints are LOEL and NOEL. LOEL represents the lowest-observable-effect-level, which means the lowest dose or concentration that produces effects that are signficantly differen than the control group. NOEL represents no-observable-effect level, which means the highest dose or concentration that produces effects that are not significantly different than the control group.
 
 ## Explore your data (Litter)
 
 10. Determine the class of collectDate. Is it a date? If not, change to a date and confirm the new class of the variable. Using the `unique` function, determine which dates litter was sampled in August 2018.
 
-```{r Q12}
+```{r Changing the class of collectDate}
+#view(Litter)
+#I viewed the Litter data and then commented out the function to avoid knitting issues.
+#Using class on collectDate as a starting point
+class(Litter$collectDate)
 
+cat("\\newpage")
 
+#Since collectDate is considered a character rather than a date, I'm using lubridate to change it to date format.
+Litter$collectDate <- ymd(Litter$collectDate)
+#Confirming with class that it is now in date format
+class(Litter$collectDate)
+#Using unique to determine which dates litter was sampled in August 2018.
+unique(Litter$collectDate)
+#Litter was sampled on August 2, 2018, and August 30, 2018.
 ```
 
 11. Using the `unique` function, list the different plotIDs sampled at Niwot Ridge. How is the information obtained from `unique` different from that obtained from `summary`?
 
-```{r Q13}
-
-
+```{r Inspecting plotIDs with unique}
+#Using the unique function to obtain the list of different plotIDs sampled at Niwot Ridge.
+unique(Litter$plotID)
+#Using the summary function as a comparison.
+summary(Litter$plotID)
 ```
 
-> Answer:
+> Answer: The unique function returned the various plotIDs sampled outright. The summary function provided the length (4443), class (character) and mode (character). In order to obtain the same information that the unique function provide, I would have needed to factor the plotID data first and then use summary.
+
+\pagebreak
 
 12. Create a bar graph of functionalGroup counts. This shows you what type of litter is collected at the Niwot Ridge sites. Notice that litter types are fairly equally distributed across the Niwot Ridge sites.
 
-```{r Q14}
-
-
+```{r Bar Graph of functionalGroup counts}
+#Creating a bar graph to visually review the functionalGroup data
+ggplot(Litter, aes(x = functionalGroup)) +
+  geom_bar()
 ```
 
 
 What type(s) of litter tend to have the highest biomass at these sites?
 
-> Answer:
+> Answer: Based on the functionalGroup bar graph, the litter with the highest biomass seems to be from trees. Needles was the number one group, followed by twigs/branches, and then woody material.
 
 13. Write a short data-exploration summary for Neonics.
 
-> - **One key characteristic:** 
-> - **One data-quality issue:** 
-> - **One interesting pattern:** 
-> - **One question for further analysis:** 
+> - **One key characteristic:** Data from the U.S. EPA collected between 2015-2026 with 8,748 entries about the response of insects to neonicotinoids
+> - **One data-quality issue:** The endpoint bar graph demonstrated that there may be some coding issues with the data. For instance, EC50 and EC50/ are separate bars, and the addition of slashes occurs with several endpoint categories.
+> - **One interesting pattern:** Six pollinators are the most commonly studied species
+> - **One question for further analysis:** Is there a relationship between the most commonly studied species and the most common effects?
+
+\pagebreak
 
 14. Write a short data-exploration summary for Litter.
 
-> - **One key characteristic:** 
-> - **One data-quality issue:** 
-> - **One interesting pattern:** 
-> - **One question for further analysis:** 
+> - **One key characteristic:** Data from NEON of litter and woody debris samples collected between January 2016-December 2024 at the Niwot Ridge long-term ecological research station
+> - **One data-quality issue:** I noticed when viewing the data in the remarks field, there are quite a few instances where there was no sample to collect or not enough data to register. It may be helpful to look for trends or see what percentage of the time this was the case.
+> - **One interesting pattern:** The litter types are fairly equally distributed.
+> - **One question for further analysis:** Are there seasonal or annual trends with litter type?
