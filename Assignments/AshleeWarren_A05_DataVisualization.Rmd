@@ -46,7 +46,7 @@ Niwot Ridge litter file (`NEON_NIWO_Litter_mass_trap_Processed.csv`) from the
 
 ```{r initialize project, message=FALSE, warning=FALSE}
 #1 
-#Loading packages tidyverse, here, lubridate, and cowplot
+#Loading packages tidyverse, here, lubridate, cowplot, and ggthemes
 library(tidyverse)
 library(here)
 library(cowplot)
@@ -89,7 +89,7 @@ changes improve readability.
 ```{r build plot theme}
 #3 Creating my theme
 my.theme <- theme_bw() +
-  #making the title bold, 14 font, and centered
+  #making the title bold, 13 font, and centered
   theme(plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
        #making my axis titles bold and 10 font
          axis.title = element_text(face = "bold", size = 10),
@@ -100,7 +100,13 @@ my.theme <- theme_bw() +
 
 ```
 
-> Theme choices and rationale:
+> Theme choices and rationale: I reviewed a lot of the preset themes and liked
+how clean and readable bw is. I wanted to have my title larger, bold, and centered,
+so I made those adjustments. I also thought it would make the plot more readable
+to have the axis titles as bold and large, but smaller than the overall title. I 
+also thought through the position of the legend and thought it would be easy to 
+compare to plotted variables but not interfere with axis titles if it were situated 
+to the right.
 
 ## Create graphs
 For Questions 4–7, create `ggplot2` graphs and adjust their aesthetics using
@@ -136,7 +142,9 @@ phosphorus.by.phosphate <- PeterPaul.chem.nutrients %>%
   #after plotting it initially to see the dimensions, I'm zooming in on data
   coord_cartesian(xlim = c(0,150), ylim = c(0,50)) +
   #incorporating my theme
-  my.theme
+  my.theme +
+  #title is too large to fit, so I'm adjusting the font size
+  theme(plot.title = element_text(face = "bold", size = 12, hjust = 0.5))
 
 phosphorus.by.phosphate
 ```
@@ -168,18 +176,19 @@ to factor to order it.
 * Setting a legend's position to "none" will remove the legend from a plot.
 * Individual plots can have different sizes when combined using `cowplot`.
 
+\pagebreak
 ```{r Create boxplots}
 #5 
 #making my temperature boxplot
 temp.by.month <- PeterPaul.chem.nutrients %>% 
   #separating month from the sample date column and making it a factor
-  mutate(month = as.factor(month(sampledate))) %>% 
-  #setting the x-axis as month, the y-axis as ph4, and the color by lake name
+  mutate(month = factor(month(sampledate), levels = 1:12, labels = month.abb)) %>% 
+  #setting the x-axis as month, the y-axis as temperature, and the color by lake name
   ggplot(aes(x=month, y=temperature_C, color=lakename)) +
   #making my box plot
   geom_boxplot() +
   #ensuring that all months are included on the x-axis
-    scale_x_discrete(drop= FALSE) +
+  scale_x_discrete(drop= FALSE) +
   #setting my title, x and y axis labels
   labs(title = "Water Temperature by Month for Peter and Paul Lakes",
        x = expression("Month"),
@@ -197,7 +206,7 @@ temp.by.month
 #making my total phosphorous plot
 tp.by.month <- PeterPaul.chem.nutrients %>% 
   #separating month from the sample date column and making it a factor
-  mutate(month = as.factor(month(sampledate))) %>% 
+  mutate(month = factor(month(sampledate), levels = 1:12, labels = month.abb)) %>% 
   #setting the x-axis as month, the y-axis as tp_ug, and the color by lake name
   ggplot(aes(x=month, y=tp_ug, color=lakename)) +
   #making my box plot
@@ -221,7 +230,7 @@ tp.by.month
 #making my total nitrogen plot
 tn.by.month <- PeterPaul.chem.nutrients %>% 
   #separating month from the sample date column and making it a factor
-  mutate(month = as.factor(month(sampledate))) %>% 
+  mutate(month = factor(month(sampledate), levels = 1:12, labels = month.abb)) %>%  
   #setting the x-axis as month, the y-axis as tn_ug, and the color by lake name
   ggplot(aes(x=month, y=tn_ug, color=lakename)) +
   #making my box plot
@@ -242,7 +251,7 @@ tn.by.month <- PeterPaul.chem.nutrients %>%
 tn.by.month
 
 #using cowplot to combine my three boxplots
-plot_grid(temp.by.month, tp.by.month, tn.by.month)
+plot_grid(temp.by.month, tp.by.month, tn.by.month, ncol = 1, align = "v")
 
 ```
 
@@ -264,6 +273,7 @@ overlapping observations remain visible.
 the three NLCD classes separated into facets rather than distinguished by color.
 Keep other formatting choices as consistent as possible so that you can compare
 the effect of faceting itself.
+\pagebreak
 
 ```{r Plot litter}
 #6 creating plot of dry mass of needle litter by date
