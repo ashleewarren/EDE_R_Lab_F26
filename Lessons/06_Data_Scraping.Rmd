@@ -18,7 +18,7 @@ editor_options:
 library(tidyverse)
 library(here); here()
 
-install.packages("rvest")
+#install.packages("rvest")
 library(rvest)
 
 # Set theme
