@@ -30,9 +30,27 @@ This exercise accompanies the lessons in Environmental Data Analytics on data sc
 library(tidyverse)
 library(rvest)
 library(here)
+library(ggthemes)
+library(cowplot)
 
 #verifying my working directory
 here()
+
+#Establishing my color palette
+canva_pal("Birds and berries")
+
+#Establishing my theme
+my.theme <- theme_bw() +
+  #making the title bold, 13 font, and centered
+  theme(plot.title = element_text(face = "bold", size = 14, hjust = 0.5),
+       #making my axis titles bold and 10 font
+         axis.title = element_text(face = "bold", size = 10),
+       #positioning my legend on the right side of the plot 
+       legend.position = "right"
+  )
+
+#setting my theme
+theme_set(my.theme)
 ```
 
 2. We will be scraping data from the NC DEQs Local Water Supply Planning website, specifically the Durham's 2024 Municipal Local Water Supply Plan (LWSP): 
@@ -46,7 +64,6 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 #2 
 Durham_LWSP_Website <- read_html('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2024')
 
-Durham_LWSP_Website
 ```
 
 3. The data we want to collect are listed below:
@@ -132,10 +149,13 @@ ggplot(Durham_2024_LWSP, aes(x=Date, y=maximum_daily_use_monthly)) +
 scrape.it.LWSP <- function(PWSID, Year){
   #retrieving the LWSP website contents
   NC_LWSP_Website <- read_html(paste0(
-'https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=',PWSID,'&year=',Year))
+'https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=',PWSID,'&year=', Year))
   #setting the element variables
   PWSID_tag <- 'td tr:nth-child(1) td:nth-child(5)'
   Year_tag <- '.fancy-table:nth-child(64) tr:nth-child(1) th:nth-child(2)'
+  water_system_name_tag <- 'div+ table tr:nth-child(1) td:nth-child(2)'
+  ownership_tag <- 'div+ table tr:nth-child(2) td:nth-child(4)'
+  maximum_daily_use_monthly_tag <- 'th~ td+ td'
   #scraping the data items
   PWSID_website <- NC_LWSP_Website %>% 
     html_nodes(PWSID_tag) %>% 
@@ -152,8 +172,9 @@ scrape.it.LWSP <- function(PWSID, Year){
                                 as.numeric(maximum_daily_use_monthly)) %>% 
                 mutate(PWSID = !!PWSID,
                        Year = !!Year,
-                       Month = m(c("Jan", "May", "Sept", "Feb", "June", "Oct", "Mar", 
-                                   "Jul", "Nov", "Apr", "Aug", "Dec")))
+                       Date = my(paste(c("Jan", "May", "Sept", "Feb", "June", "Oct", 
+                                          "Mar", "Jul", "Nov", "Apr", "Aug", "Dec"), 
+                                        Year)))
   
   #returns the dataframe as the function's output
   return(NC_LWSP)
@@ -171,14 +192,38 @@ Durham_2020_LWSP <- scrape.it.LWSP('03-32-010', 2020)
 #viewing the structure of my dataframe
 glimpse(Durham_2020_LWSP)
 
+#plotting the date and maximum day use of water from the dataframe
+Durham_2020_Plot <- Durham_2020_LWSP %>% 
+ggplot(aes(x= Date, y= maximum_daily_use_monthly)) +
+  geom_line() +
+  labs(title = "Maximum Day Use of Water in Durham, NC in 2020",
+       x= "Date",
+       y="Maximum Day Use (MGD)")
+
+#viewing the plot
+Durham_2020_Plot
 ```
 
 8. Use the function above to extract data for Cary (PWSID = '03-32-010') in 2020. Combine this data with the Durham data collected above and create a plot that compares Cary's to Durham's water withdrawals.
 
 ```{r fetch.and.plot.Cary.2020.data}
-#8 
+#8 using my scrape.it function to extract the max daily use for Cary for each 
+#month in 2020 and return it in a dataframe
+Cary_2020_LWSP <- scrape.it.LWSP('03-92-020', 2020)
 
+#plotting the date and maximum day use of water from the dataframe
+Cary_2020_Plot <- Cary_2020_LWSP %>% 
+ggplot(aes(x= Date, y= maximum_daily_use_monthly)) +
+  geom_line() +
+  labs(title = "Maximum Day Use of Water in Cary, NC in 2020",
+       x= "Date",
+       y="Maximum Day Use (MGD)")
 
+#viewing the plot
+Cary_2020_Plot
+
+#using cowplot to combine my Durham 2020 and Cary 2020 maximum day use of water plots
+plot_grid(Durham_2020_Plot, Cary_2020_Plot)
 ```
 
 
@@ -187,9 +232,23 @@ glimpse(Durham_2020_LWSP)
 > TIP: See Section 3.2 in the "10_Data_Scraping.Rmd" where we apply "map2()" to iteratively run a function over two inputs. Pipe the output of the map2() function to `bind_rows()` to combine the dataframes into a single one, and use that to construct your plot.
 
 ```{r fetch.and.plot.Cary.multiyear.data }
-#9 
+#9 creating a dataframe for Cary's maximum daily use by date for 2018-2023
+Cary_2018_2023_LWSP <- map2('03-92-020', 2018:2023, scrape.it.LWSP)
 
+#combining these into one dataframe
+Cary_2018_2023_LWSP_Combo <- bind_rows(Cary_2018_2023_LWSP)
 
+#creating a plot from the combined dataframe with a smoothed line
+Cary_2018_2023_Plot <- Cary_2018_2023_LWSP_Combo %>% 
+ggplot(aes(x= Date, y= maximum_daily_use_monthly)) +
+  geom_line() +
+  geom_smooth(method="loess") +
+  labs(title = "Maximum Day Use of Water in Cary, NC from 2018-2023",
+       x= "Date",
+       y="Maximum Day Use (MGD)")
+
+#viewing the plot
+Cary_2018_2023_Plot
 ```
 
 Question: Just by looking at the plot (i.e. not running statistics), does Cary have a trend in water usage over time?
