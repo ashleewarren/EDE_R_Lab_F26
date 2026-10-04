@@ -116,7 +116,8 @@ maximum_daily_use_monthly <- Durham_LWSP_Website %>%
 Durham_2024_LWSP <- data.frame("water_system_name" = as.character(water_system_name),
                                "PWSID" = as.character(PWSID), 
                                "ownership" = as.character(ownership),
-                               "maximum_daily_use_monthly" = as.numeric(maximum_daily_use_monthly))
+                               "maximum_daily_use_monthly" = 
+                                 as.numeric(maximum_daily_use_monthly))
 
 #adding a date column to the dataframe
 Durham_2024_LWSP <- Durham_2024_LWSP %>% 
@@ -147,15 +148,18 @@ ggplot(Durham_2024_LWSP, aes(x=Date, y=maximum_daily_use_monthly)) +
 ```{r construct.a.scraping.function}
 #6 creating a scraping function with PWSID and year
 scrape.it.LWSP <- function(PWSID, Year){
+  
   #retrieving the LWSP website contents
   NC_LWSP_Website <- read_html(paste0(
-'https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=',PWSID,'&year=', Year))
+'https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=', PWSID, '&year=', Year))
+ 
   #setting the element variables
   PWSID_tag <- 'td tr:nth-child(1) td:nth-child(5)'
   Year_tag <- '.fancy-table:nth-child(64) tr:nth-child(1) th:nth-child(2)'
   water_system_name_tag <- 'div+ table tr:nth-child(1) td:nth-child(2)'
   ownership_tag <- 'div+ table tr:nth-child(2) td:nth-child(4)'
   maximum_daily_use_monthly_tag <- 'th~ td+ td'
+  
   #scraping the data items
   PWSID_website <- NC_LWSP_Website %>% 
     html_nodes(PWSID_tag) %>% 
@@ -163,6 +167,18 @@ scrape.it.LWSP <- function(PWSID, Year){
   
   Year_website <- NC_LWSP_Website %>% 
     html_nodes(Year_tag) %>% 
+    html_text()
+  
+  water_system_name_website <- NC_LWSP_Website %>% 
+    html_nodes(water_system_name_tag) %>% 
+    html_text()
+  
+  ownership_website <- NC_LWSP_Website %>% 
+    html_nodes(ownership_tag) %>% 
+    html_text()
+  
+  maximum_daily_use_website <- NC_LWSP_Website %>% 
+    html_nodes(maximum_daily_use_monthly_tag) %>% 
     html_text()
   
   #creating the dataframe
