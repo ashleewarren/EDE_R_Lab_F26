@@ -64,6 +64,8 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 #2 
 Durham_LWSP_Website <- read_html('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2024')
 
+#I know the full website isn't readable, but I couldn't get it to bump down to the
+#next line and the code still work.
 ```
 
 3. The data we want to collect are listed below:
@@ -112,7 +114,8 @@ maximum_daily_use_monthly <- Durham_LWSP_Website %>%
 5. Create a line plot of the maximum daily withdrawals across the months for 2024, making sure, the months are presented in proper sequence.
 
 ```{r create.a.dataframe.from.scraped.data}
-#4 creating a dataframe with the columns of the four variables I just scraped and a row for the months
+#4 creating a dataframe with the columns of the four variables I just scraped and a 
+#row for the months
 Durham_2024_LWSP <- data.frame("water_system_name" = as.character(water_system_name),
                                "PWSID" = as.character(PWSID), 
                                "ownership" = as.character(ownership),
@@ -128,12 +131,15 @@ Durham_2024_LWSP <- Durham_2024_LWSP %>%
 #viewing the dataframe and commenting it out after
 #view(Durham_2024_LWSP)
 
+
+
 #5 creating a line plot for the maxium daily use values for each month in 2024
 ggplot(Durham_2024_LWSP, aes(x=Date, y=maximum_daily_use_monthly)) +
   geom_line() +
   labs(title = "Maximum Day Use of Water in Durham, NC in 2024",
        x= "Date",
-       y="Maximum Day Use (MGD)")
+       y="Maximum Day Use (MGD)") +
+  my.theme
 
 
 ```
@@ -144,14 +150,14 @@ ggplot(Durham_2024_LWSP, aes(x=Date, y=maximum_daily_use_monthly)) +
   - Constructs a dataframe from the scraped data, mostly as you did above, but includes the PWSID and year provided as function inputs in the dataframe. 
   - Returns the dataframe as the function's output
 
-
+\pagebreak
 ```{r construct.a.scraping.function}
 #6 creating a scraping function with PWSID and year
 scrape.it.LWSP <- function(PWSID, Year){
   
   #retrieving the LWSP website contents
   NC_LWSP_Website <- read_html(paste0(
-'https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=', PWSID, '&year=', Year))
+'https://www.ncwater.org/WUDC/app/LWSP/report.php?', 'pwsid=', PWSID, '&year=', Year))
  
   #setting the element variables
   PWSID_tag <- 'td tr:nth-child(1) td:nth-child(5)'
@@ -182,10 +188,10 @@ scrape.it.LWSP <- function(PWSID, Year){
     html_text()
   
   #creating the dataframe
-  NC_LWSP <- data.frame("water_system_name" = as.character(water_system_name),
-                               "ownership" = as.character(ownership),
+  NC_LWSP <- data.frame("water_system_name" = as.character(water_system_name_website),
+                               "ownership" = as.character(ownership_website),
                                "maximum_daily_use_monthly" = 
-                                as.numeric(maximum_daily_use_monthly)) %>% 
+                                as.numeric(maximum_daily_use_website)) %>% 
                 mutate(PWSID = !!PWSID,
                        Year = !!Year,
                        Date = my(paste(c("Jan", "May", "Sept", "Feb", "June", "Oct", 
@@ -214,7 +220,9 @@ ggplot(aes(x= Date, y= maximum_daily_use_monthly)) +
   geom_line() +
   labs(title = "Maximum Day Use of Water in Durham, NC in 2020",
        x= "Date",
-       y="Maximum Day Use (MGD)")
+       y="Maximum Day Use (MGD)") +
+  my.theme +
+  theme(plot.title = element_text(face = "bold", size = 8, hjust = 0.5))
 
 #viewing the plot
 Durham_2020_Plot
@@ -233,7 +241,9 @@ ggplot(aes(x= Date, y= maximum_daily_use_monthly)) +
   geom_line() +
   labs(title = "Maximum Day Use of Water in Cary, NC in 2020",
        x= "Date",
-       y="Maximum Day Use (MGD)")
+       y="Maximum Day Use (MGD)") +
+  my.theme +
+  theme(plot.title = element_text(face = "bold", size = 8, hjust = 0.5))
 
 #viewing the plot
 Cary_2020_Plot
@@ -261,12 +271,13 @@ ggplot(aes(x= Date, y= maximum_daily_use_monthly)) +
   geom_smooth(method="loess") +
   labs(title = "Maximum Day Use of Water in Cary, NC from 2018-2023",
        x= "Date",
-       y="Maximum Day Use (MGD)")
+       y="Maximum Day Use (MGD)") +
+  my.theme
 
 #viewing the plot
 Cary_2018_2023_Plot
 ```
 
 Question: Just by looking at the plot (i.e. not running statistics), does Cary have a trend in water usage over time?
-> Answer:
+> Answer: Yes, it does seem like Cary has a trend in water usage. The general trend is that usage is lower in the winter months, increases throught the spring, peaks in the summar, and begins decreasing in the fall to reach the low winter point once again.
 >
